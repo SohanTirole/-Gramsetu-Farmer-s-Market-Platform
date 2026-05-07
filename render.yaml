@@ -1,0 +1,35 @@
+# ──────────────────────────────────────────────────────────
+#  GramSetu — Render.com Deployment (Docker)
+# ──────────────────────────────────────────────────────────
+
+services:
+  - type: web
+    name: gramsetu
+    runtime: docker          # Uses the Dockerfile in the root
+    plan: free
+
+    healthCheckPath: /home
+
+    envVars:
+      - key: DB_URL
+        sync: false          # Set this in Render dashboard
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: UPLOAD_DIR
+        value: /uploads
+      - key: MAIL_HOST
+        value: smtp.gmail.com
+      - key: MAIL_PORT
+        value: "587"
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false
+
+    # Uncomment to add a persistent disk for file uploads (paid plans)
+    # disk:
+    #   name: uploads
+    #   mountPath: /uploads
+    #   sizeGB: 1

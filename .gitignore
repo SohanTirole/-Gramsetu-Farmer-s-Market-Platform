@@ -1,0 +1,24 @@
+# Maven build output
+target/
+
+# IDE files
+.classpath
+.project
+.settings/
+*.iml
+.idea/
+
+# Logs
+*.log
+logs/
+
+# Uploaded files (store on server, not in git)
+uploads/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment / secrets — NEVER commit these
+*.env
+.env

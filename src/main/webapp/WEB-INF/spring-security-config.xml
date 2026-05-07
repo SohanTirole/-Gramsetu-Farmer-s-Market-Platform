@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans:beans 
+    xmlns="http://www.springframework.org/schema/security"
+    xmlns:beans="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/security
+        https://www.springframework.org/schema/security/spring-security.xsd
+        http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- Static resources bypass security -->
+    <http pattern="/static/**" security="none"/>
+    <http pattern="/favicon.ico" security="none"/>
+    <http pattern="/uploads/**" security="none"/>
+
+    <http use-expressions="true"
+      auto-config="true"
+      entry-point-ref="loginUrlAuthenticationEntryPoint">
+
+        <!-- Public pages -->
+        <intercept-url pattern="/auth/**"        access="permitAll"/>
+        <intercept-url pattern="/home"           access="permitAll"/>
+        <intercept-url pattern="/"               access="permitAll"/>
+        <intercept-url pattern="/crops/list"     access="permitAll"/>
+        <intercept-url pattern="/crops/detail/**" access="permitAll"/>
+        <intercept-url pattern="/schemes"        access="permitAll"/>
+        <intercept-url pattern="/forum"          access="permitAll"/>
+        <intercept-url pattern="/forum/post/**"  access="permitAll"/>
+        <intercept-url pattern="/prices"         access="permitAll"/>
+
+        <!-- Role-specific pages -->
+        <intercept-url pattern="/farmer/**"  access="hasRole('FARMER')"/>
+        <intercept-url pattern="/buyer/**"   access="hasRole('BUYER')"/>
+        <intercept-url pattern="/svc/**"     access="hasRole('SVC')"/>
+        <intercept-url pattern="/agro/**"    access="hasRole('AGRONOMIST')"/>
+        <intercept-url pattern="/admin/**"   access="hasRole('ADMIN')"/>
+        <intercept-url pattern="/ngo/**"     access="hasRole('NGO')"/>
+
+        <!-- Authenticated-only pages -->
+        <intercept-url pattern="/forum/**"          access="isAuthenticated()"/>
+        <intercept-url pattern="/profile/**"        access="isAuthenticated()"/>
+        <intercept-url pattern="/notifications/**"  access="isAuthenticated()"/>
+
+        <!-- Everything else requires login -->
+        <intercept-url pattern="/**" access="isAuthenticated()"/>
+
+        <form-login
+            login-page="/auth/login"
+            login-processing-url="/auth/login-process"
+            authentication-success-handler-ref="customSuccessHandler"
+            authentication-failure-url="/auth/login?error=true"
+            username-parameter="email"
+            password-parameter="password"/>
+
+        <logout
+            logout-url="/auth/logout"
+            logout-success-url="/auth/login?logout=true"
+            invalidate-session="true"
+            delete-cookies="JSESSIONID"/>
+
+        <!-- CSRF enabled for security -->
+        <csrf disabled="false"/>
+
+        <!-- Session fixation protection + max 1 concurrent session -->
+        <session-management session-fixation-protection="newSession"
+                            invalid-session-url="/auth/login">
+            <concurrency-control max-sessions="2"
+                                 expired-url="/auth/login?expired=true"/>
+        </session-management>
+
+        <!-- Prevent clickjacking -->
+        <headers>
+            <frame-options policy="DENY"/>
+            <content-type-options/>
+            <xss-protection/>
+        </headers>
+
+    </http>
+
+    <authentication-manager>
+        <authentication-provider user-service-ref="customUserDetailsService">
+            <password-encoder ref="passwordEncoder"/>
+        </authentication-provider>
+    </authentication-manager>
+
+    <beans:bean id="loginUrlAuthenticationEntryPoint"
+        class="org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint">
+        <beans:constructor-arg value="/auth/login"/>
+    </beans:bean>
+
+    <beans:bean id="customSuccessHandler"
+        class="com.gramsetu.config.CustomSuccessHandler"/>
+        
+    <beans:bean id="webExpressionHandler"
+    class="org.springframework.security.web.access.expression.DefaultWebSecurityExpressionHandler"/>
+
+</beans:beans>
